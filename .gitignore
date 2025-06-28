@@ -1,0 +1,15 @@
+# VIB34D System - GitHub Pages
+# Only include VIB34D project files
+
+# Ignore everything in parent directories
+../*
+
+# System files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# IDE
+.vscode/
+.idea/

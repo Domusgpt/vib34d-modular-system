@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB34D System - Modular Architecture</title>
+    
+    <style>
+        /* Base system styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff88;
+            overflow-x: hidden;
+        }
+        
+        /* System status display */
+        .system-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff88;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+            min-width: 200px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            color: #ffffff;
+        }
+        
+        .status-value.error {
+            color: #ff4444;
+        }
+        
+        .status-value.warning {
+            color: #ffaa00;
+        }
+        
+        .status-value.success {
+            color: #00ff88;
+        }
+        
+        /* Loading screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .loading-progress {
+            width: 400px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #0088ff);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .loading-status {
+            font-size: 14px;
+            text-align: center;
+            color: #888;
+        }
+        
+        /* Main container */
+        .main-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at center, #111111, #000000);
+        }
+        
+        /* Header */
+        .system-header {
+            height: 60px;
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid #00ff88;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+        
+        .system-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .system-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-button {
+            background: transparent;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .control-button:hover {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .control-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Main content area */
+        .content-area {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 400px 1fr;
+            grid-template-rows: 1fr 300px 100px;
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        /* Visualizer containers */
+        .visualizer-container {
+            border: 1px solid #333;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            background: #111;
+        }
+        
+        .visualizer-container.board {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        
+        .visualizer-container.card {
+            height: 150px;
+        }
+        
+        .visualizer-container.card.home {
+            grid-column: 1;
+            grid-row: 1;
+        }
+        
+        .visualizer-container.card.tech {
+            grid-column: 3;
+            grid-row: 1;
+        }
+        
+        .visualizer-container.card.media {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        
+        .visualizer-container.card.innovation {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        
+        .visualizer-container.card.research {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        
+        .visualizer-container.bezel {
+            grid-column: 1 / -1;
+            grid-row: 3;
+            height: 100px;
+        }
+        
+        .visualizer-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .visualizer-label {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2px 6px;
+            font-size: 10px;
+            border-radius: 2px;
+            z-index: 10;
+        }
+        
+        /* Error display */
+        .error-panel {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff4444;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .error-panel.visible {
+            display: block;
+        }
+        
+        .error-message {
+            color: #ff4444;
+            font-size: 14px;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .content-area {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            
+            .visualizer-container {
+                grid-column: 1 !important;
+                grid-row: auto !important;
+                height: 200px;
+            }
+        }
+        
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-title">VIB34D System</div>
+        <div class="loading-progress">
+            <div id="loadingBar" class="loading-bar"></div>
+        </div>
+        <div id="loadingStatus" class="loading-status">Initializing...</div>
+    </div>
+    
+    <!-- System Status Display -->
+    <div id="systemStatus" class="system-status" style="display: none;">
+        <div class="status-item">
+            <span>System:</span>
+            <span id="statusSystem" class="status-value">Starting</span>
+        </div>
+        <div class="status-item">
+            <span>FPS:</span>
+            <span id="statusFPS" class="status-value">--</span>
+        </div>
+        <div class="status-item">
+            <span>Memory:</span>
+            <span id="statusMemory" class="status-value">--</span>
+        </div>
+        <div class="status-item">
+            <span>Visualizers:</span>
+            <span id="statusVisualizers" class="status-value">0</span>
+        </div>
+        <div class="status-item">
+            <span>Health:</span>
+            <span id="statusHealth" class="status-value">Unknown</span>
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div id="mainContainer" class="main-container" style="display: none;">
+        <!-- Header -->
+        <header class="system-header">
+            <div class="system-title">VIB34D - Modular Architecture</div>
+            <div class="system-controls">
+                <button id="btnPresets" class="control-button">Presets</button>
+                <button id="btnGeometry" class="control-button">Geometry</button>
+                <button id="btnPerformance" class="control-button">Performance</button>
+                <button id="btnDebug" class="control-button">Debug</button>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <main class="content-area">
+            <!-- Main Board Visualizer -->
+            <div class="visualizer-container board">
+                <canvas id="visualizer-board" class="visualizer-canvas"></canvas>
+                <div class="visualizer-label">Board</div>
+            </div>
+            
+            <!-- Card Visualizers -->
+            <div class="visualizer-container card home">
+                <canvas id="card-home" class="visualizer-canvas"></canvas>
+                <div class="visualizer-label">Home</div>
+            </div>
+            
+            <div class="visualizer-container card tech">
+                <canvas id="card-tech" class="visualizer-canvas"></canvas>
+                <div class="visualizer-label">Tech</div>
+            </div>
+            
+            <div class="visualizer-container card media">
+                <canvas id="card-media" class="visualizer-canvas"></canvas>
+                <div class="visualizer-label">Media</div>
+            </div>
+            
+            <div class="visualizer-container card innovation">
+                <canvas id="card-innovation" class="visualizer-canvas"></canvas>
+                <div class="visualizer-label">Innovation</div>
+            </div>
+            
+            <div class="visualizer-container card research">
+                <canvas id="card-research" class="visualizer-canvas"></canvas>
+                <div class="visualizer-label">Research</div>
+            </div>
+            
+            <!-- Bezel Visualizer -->
+            <div class="visualizer-container bezel">
+                <canvas id="bezel-1" class="visualizer-canvas"></canvas>
+                <div class="visualizer-label">Bezel</div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Error Panel -->
+    <div id="errorPanel" class="error-panel">
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+    
+    <!-- Load fallback visualizers from original system -->
+    <script src="/mnt/c/Users/millz/6/27/CLAUDE/core/VIB34D_MOIRE_VISUALIZER.js"></script>
+    <script src="/mnt/c/Users/millz/6/27/CLAUDE/core/VIB34D_POLYTOPAL_VISUALIZER.js"></script>
+    
+    <!-- Load new modular system -->
+    <script type="module">
+        /**
+         * VIB34D SYSTEM INITIALIZATION
+         * Modular architecture implementation
+         */
+        
+        class VIB3SystemInitializer {
+            constructor() {
+                this.loadingSteps = [
+                    'Loading core modules...',
+                    'Initializing system controller...',
+                    'Setting up interactions...',
+                    'Creating visualizer pool...',
+                    'Loading geometry registry...',
+                    'Initializing preset database...',
+                    'Starting performance monitoring...',
+                    'Setting up error handling...',
+                    'Creating visualizers...',
+                    'System ready!'
+                ];
+                
+                this.currentStep = 0;
+                this.systemController = null;
+                this.initializationFailed = false;
+            }
+            
+            async initialize() {
+                try {
+                    console.log('🚀 Starting VIB34D System initialization...');
+                    
+                    // Step 1: Load core modules
+                    await this.updateProgress('Loading core modules...');
+                    const modules = await this.loadCoreModules();
+                    
+                    // Step 2: Initialize system controller
+                    await this.updateProgress('Initializing system controller...');
+                    this.systemController = new modules.VIB3SystemController({
+                        performanceMode: 'high',
+                        debugMode: true,
+                        maxVisualizers: 20
+                    });
+                    
+                    // Step 3: Initialize system
+                    await this.updateProgress('Setting up system components...');
+                    await this.systemController.initialize();
+                    
+                    // Step 4: Start system
+                    await this.updateProgress('Starting system...');
+                    await this.systemController.start();
+                    
+                    // Step 5: Setup UI integration
+                    await this.updateProgress('Setting up user interface...');
+                    this.setupUIIntegration();
+                    
+                    // Step 6: Complete initialization
+                    await this.updateProgress('System ready!');
+                    this.completeInitialization();
+                    
+                } catch (error) {
+                    console.error('❌ System initialization failed:', error);
+                    this.handleInitializationError(error);
+                }
+            }
+            
+            async loadCoreModules() {
+                const modules = {};
+                
+                try {
+                    // Load modules with fallback to global namespace
+                    if (typeof window.VIB3SystemController !== 'undefined') {
+                        modules.VIB3SystemController = window.VIB3SystemController;
+                        modules.VIB3HomeMaster = window.VIB3HomeMaster;
+                        modules.InteractionCoordinator = window.InteractionCoordinator;
+                        modules.VisualizerPool = window.VisualizerPool;
+                        modules.GeometryRegistry = window.GeometryRegistry;
+                        modules.PresetDatabase = window.PresetDatabase;
+                        modules.PerformanceMonitor = window.PerformanceMonitor;
+                        modules.ErrorHandler = window.ErrorHandler;
+                        
+                        console.log('✅ Modules loaded from global namespace');
+                    } else {
+                        // Try dynamic imports (for future ES6 module support)
+                        try {
+                            modules.VIB3SystemController = (await import('./src/core/VIB3SystemController.js')).VIB3SystemController;
+                            modules.VIB3HomeMaster = (await import('./src/core/VIB3HomeMaster.js')).VIB3HomeMaster;
+                            modules.InteractionCoordinator = (await import('./src/interactions/InteractionCoordinator.js')).InteractionCoordinator;
+                            modules.VisualizerPool = (await import('./src/managers/VisualizerPool.js')).VisualizerPool;
+                            modules.GeometryRegistry = (await import('./src/geometry/GeometryRegistry.js')).GeometryRegistry;
+                            modules.PresetDatabase = (await import('./src/presets/PresetDatabase.js')).PresetDatabase;
+                            modules.PerformanceMonitor = (await import('./src/utils/PerformanceMonitor.js')).PerformanceMonitor;
+                            modules.ErrorHandler = (await import('./src/utils/ErrorHandler.js')).ErrorHandler;
+                            
+                            console.log('✅ Modules loaded via ES6 imports');
+                        } catch (importError) {
+                            console.warn('⚠️ ES6 import failed, creating minimal implementation');
+                            return this.createMinimalImplementation();
+                        }
+                    }
+                    
+                    return modules;
+                    
+                } catch (error) {
+                    console.error('❌ Failed to load modules:', error);
+                    throw new Error('Module loading failed');
+                }
+            }
+            
+            createMinimalImplementation() {
+                console.log('🔧 Creating minimal system implementation...');
+                
+                // Minimal system controller for fallback
+                const MinimalSystemController = class {
+                    constructor(config) {
+                        this.config = config;
+                        this.isInitialized = false;
+                        this.isRunning = false;
+                        console.log('📦 Minimal system controller created');
+                    }
+                    
+                    async initialize() {
+                        this.isInitialized = true;
+                        console.log('✅ Minimal system initialized');
+                    }
+                    
+                    async start() {
+                        this.isRunning = true;
+                        this.createBasicVisualizers();
+                        console.log('✅ Minimal system started');
+                    }
+                    
+                    createBasicVisualizers() {
+                        // Create basic visualizers using existing classes
+                        const canvases = document.querySelectorAll('.visualizer-canvas');
+                        canvases.forEach((canvas, index) => {
+                            try {
+                                if (window.VIB34D_MOIRE_VISUALIZER) {
+                                    new window.VIB34D_MOIRE_VISUALIZER(canvas, 'content', `minimal_${index}`);
+                                }
+                            } catch (error) {
+                                console.warn(`Failed to create visualizer for ${canvas.id}:`, error);
+                            }
+                        });
+                    }
+                    
+                    getStatus() {
+                        return {
+                            isInitialized: this.isInitialized,
+                            isRunning: this.isRunning,
+                            health: 'minimal',
+                            modules: ['minimal']
+                        };
+                    }
+                };
+                
+                return {
+                    VIB3SystemController: MinimalSystemController
+                };
+            }
+            
+            async updateProgress(message) {
+                const progressBar = document.getElementById('loadingBar');
+                const statusText = document.getElementById('loadingStatus');
+                
+                this.currentStep++;
+                const progress = (this.currentStep / this.loadingSteps.length) * 100;
+                
+                if (progressBar) {
+                    progressBar.style.width = `${progress}%`;
+                }
+                
+                if (statusText) {
+                    statusText.textContent = message;
+                }
+                
+                console.log(`📋 [${this.currentStep}/${this.loadingSteps.length}] ${message}`);
+                
+                // Small delay for visual feedback
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            setupUIIntegration() {
+                // Setup control buttons
+                this.setupControlButtons();
+                
+                // Setup keyboard shortcuts
+                this.setupKeyboardShortcuts();
+                
+                // Setup status monitoring
+                this.setupStatusMonitoring();
+                
+                console.log('🎮 UI integration complete');
+            }
+            
+            setupControlButtons() {
+                const buttons = {
+                    btnPresets: () => this.showPresets(),
+                    btnGeometry: () => this.cycleGeometry(),
+                    btnPerformance: () => this.togglePerformanceMode(),
+                    btnDebug: () => this.toggleDebugMode()
+                };
+                
+                for (const [id, handler] of Object.entries(buttons)) {
+                    const button = document.getElementById(id);
+                    if (button) {
+                        button.addEventListener('click', handler);
+                    }
+                }
+            }
+            
+            setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (event) => {
+                    if (event.ctrlKey || event.metaKey) {
+                        switch (event.key) {
+                            case 'p':
+                                event.preventDefault();
+                                this.showPresets();
+                                break;
+                            case 'g':
+                                event.preventDefault();
+                                this.cycleGeometry();
+                                break;
+                            case 'd':
+                                event.preventDefault();
+                                this.toggleDebugMode();
+                                break;
+                        }
+                    }
+                });
+            }
+            
+            setupStatusMonitoring() {
+                if (!this.systemController) return;
+                
+                setInterval(() => {
+                    try {
+                        const status = this.systemController.getStatus();
+                        this.updateStatusDisplay(status);
+                    } catch (error) {
+                        console.warn('Failed to update status:', error);
+                    }
+                }, 1000);
+            }
+            
+            updateStatusDisplay(status) {
+                const elements = {
+                    statusSystem: status.isRunning ? 'Running' : 'Stopped',
+                    statusFPS: '--', // Would come from performance monitor
+                    statusMemory: '--', // Would come from performance monitor
+                    statusVisualizers: status.modules?.includes('visualizerPool') ? '7' : '0',
+                    statusHealth: status.health || 'Unknown'
+                };
+                
+                for (const [id, value] of Object.entries(elements)) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                        
+                        // Update status colors
+                        element.className = 'status-value';
+                        if (id === 'statusHealth') {
+                            if (value === 'healthy') element.classList.add('success');
+                            else if (value === 'degraded') element.classList.add('warning');
+                            else if (value === 'critical') element.classList.add('error');
+                        }
+                    }
+                }
+            }
+            
+            completeInitialization() {
+                // Hide loading screen
+                const loadingScreen = document.getElementById('loadingScreen');
+                const mainContainer = document.getElementById('mainContainer');
+                const systemStatus = document.getElementById('systemStatus');
+                
+                if (loadingScreen) {
+                    loadingScreen.classList.add('hidden');
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
+                
+                if (mainContainer) {
+                    mainContainer.style.display = 'flex';
+                    mainContainer.classList.add('fade-in');
+                }
+                
+                if (systemStatus) {
+                    systemStatus.style.display = 'block';
+                    systemStatus.classList.add('slide-up');
+                }
+                
+                console.log('🎉 VIB34D System initialization complete!');
+            }
+            
+            handleInitializationError(error) {
+                this.initializationFailed = true;
+                
+                const loadingScreen = document.getElementById('loadingScreen');
+                const statusText = document.getElementById('loadingStatus');
+                const errorPanel = document.getElementById('errorPanel');
+                const errorMessage = document.getElementById('errorMessage');
+                
+                if (statusText) {
+                    statusText.textContent = 'Initialization failed!';
+                    statusText.style.color = '#ff4444';
+                }
+                
+                if (errorPanel && errorMessage) {
+                    errorMessage.textContent = `System initialization failed: ${error.message}`;
+                    errorPanel.classList.add('visible');
+                }
+                
+                // Try minimal fallback after delay
+                setTimeout(async () => {
+                    try {
+                        console.log('🔧 Attempting fallback initialization...');
+                        const modules = this.createMinimalImplementation();
+                        this.systemController = new modules.VIB3SystemController({});
+                        await this.systemController.initialize();
+                        await this.systemController.start();
+                        this.completeInitialization();
+                        
+                        if (errorPanel) {
+                            errorPanel.classList.remove('visible');
+                        }
+                        
+                        console.log('✅ Fallback initialization successful');
+                    } catch (fallbackError) {
+                        console.error('❌ Fallback initialization also failed:', fallbackError);
+                    }
+                }, 2000);
+            }
+            
+            // UI Action Handlers
+            showPresets() {
+                console.log('🎨 Show presets panel');
+                // Implementation would show preset selection UI
+            }
+            
+            cycleGeometry() {
+                console.log('📐 Cycle geometry');
+                // Implementation would cycle through geometry types
+            }
+            
+            togglePerformanceMode() {
+                console.log('⚡ Toggle performance mode');
+                // Implementation would toggle between performance modes
+            }
+            
+            toggleDebugMode() {
+                console.log('🐛 Toggle debug mode');
+                // Implementation would toggle debug overlays
+            }
+        }
+        
+        // Initialize system when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            const initializer = new VIB3SystemInitializer();
+            await initializer.initialize();
+        });
+        
+        // Global error handler
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            
+            const errorPanel = document.getElementById('errorPanel');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (errorPanel && errorMessage) {
+                errorMessage.textContent = `Error: ${event.error?.message || 'Unknown error'}`;
+                errorPanel.classList.add('visible');
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    errorPanel.classList.remove('visible');
+                }, 10000);
+            }
+        });
+        
+    </script>
+    
+    <!-- Load modular system components -->
+    <script src="src/core/VIB3SystemController.js"></script>
+    <script src="src/core/VIB3HomeMaster.js"></script>
+    <script src="src/core/UnifiedReactivityBridge.js"></script>
+    <script src="src/interactions/InteractionCoordinator.js"></script>
+    <script src="src/managers/VisualizerPool.js"></script>
+    <script src="src/geometry/GeometryRegistry.js"></script>
+    <script src="src/presets/PresetDatabase.js"></script>
+    <script src="src/utils/PerformanceMonitor.js"></script>
+    <script src="src/utils/ErrorHandler.js"></script>
+    
+</body>
+</html>

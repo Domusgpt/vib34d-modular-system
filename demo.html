@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB34D System Demo - Modular Architecture</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff88;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 16px;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .demo-section h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .demo-canvas {
+            width: 100%;
+            height: 200px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .control-button {
+            background: transparent;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .control-button:hover {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .control-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status-panel {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .status-item {
+            background: #222;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid #00ff88;
+        }
+        
+        .status-item h4 {
+            color: #00ff88;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .status-value {
+            color: #fff;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        
+        .log-panel {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-family: monospace;
+        }
+        
+        .log-entry.info { color: #00ff88; }
+        .log-entry.warn { color: #ffaa00; }
+        .log-entry.error { color: #ff4444; }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ VIB34D System Demo</h1>
+            <p>Modular Architecture • EventTarget-Based • Performance Optimized</p>
+        </div>
+        
+        <div class="demo-grid">
+            <div class="demo-section">
+                <h3>📐 Geometry Registry</h3>
+                <div id="geometry-canvas" class="demo-canvas">
+                    <span class="loading">Geometry System Loading...</span>
+                </div>
+                <div class="controls">
+                    <button class="control-button" onclick="cycleGeometry()">Cycle Geometry</button>
+                    <button class="control-button" onclick="toggleMorphing()">Toggle Morphing</button>
+                </div>
+            </div>
+            
+            <div class="demo-section">
+                <h3>🏊 Visualizer Pool</h3>
+                <div id="pool-canvas" class="demo-canvas">
+                    <span class="loading">Visualizer Pool Loading...</span>
+                </div>
+                <div class="controls">
+                    <button class="control-button" onclick="createInstance()">Create Instance</button>
+                    <button class="control-button" onclick="destroyInstance()">Destroy Instance</button>
+                </div>
+            </div>
+            
+            <div class="demo-section">
+                <h3>🎨 Preset Database</h3>
+                <div id="preset-canvas" class="demo-canvas">
+                    <span class="loading">Preset System Loading...</span>
+                </div>
+                <div class="controls">
+                    <button class="control-button" onclick="loadPreset()">Load Preset</button>
+                    <button class="control-button" onclick="savePreset()">Save Preset</button>
+                </div>
+            </div>
+            
+            <div class="demo-section">
+                <h3>📊 Performance Monitor</h3>
+                <div id="performance-canvas" class="demo-canvas">
+                    <span class="loading">Performance Monitor Loading...</span>
+                </div>
+                <div class="controls">
+                    <button class="control-button" onclick="startMonitoring()">Start Monitor</button>
+                    <button class="control-button" onclick="stopMonitoring()">Stop Monitor</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-panel">
+            <h3>🎛️ System Status</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <h4>System Controller</h4>
+                    <div id="status-controller" class="status-value">Initializing...</div>
+                </div>
+                <div class="status-item">
+                    <h4>Home Master</h4>
+                    <div id="status-homemaster" class="status-value">Initializing...</div>
+                </div>
+                <div class="status-item">
+                    <h4>Visualizer Pool</h4>
+                    <div id="status-pool" class="status-value">Initializing...</div>
+                </div>
+                <div class="status-item">
+                    <h4>Error Handler</h4>
+                    <div id="status-errors" class="status-value">Initializing...</div>
+                </div>
+                <div class="status-item">
+                    <h4>Geometry Registry</h4>
+                    <div id="status-geometry" class="status-value">Loading...</div>
+                </div>
+                <div class="status-item">
+                    <h4>Performance</h4>
+                    <div id="status-performance" class="status-value">Monitoring...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="log-panel">
+            <h3>📋 System Log</h3>
+            <div id="system-log"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Mock system for demonstration
+        let systemModules = {};
+        let logEntries = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            logEntries.push({ message: entry, type });
+            
+            const logPanel = document.getElementById('system-log');
+            const logElement = document.createElement('div');
+            logElement.className = `log-entry ${type}`;
+            logElement.textContent = entry;
+            logPanel.appendChild(logElement);
+            logPanel.scrollTop = logPanel.scrollHeight;
+            
+            console.log(entry);
+        }
+        
+        function updateStatus(component, status) {
+            const element = document.getElementById(`status-${component}`);
+            if (element) {
+                element.textContent = status;
+            }
+        }
+        
+        function updateCanvas(canvasId, content) {
+            const canvas = document.getElementById(canvasId);
+            if (canvas) {
+                canvas.innerHTML = content;
+            }
+        }
+        
+        // Initialize demo system
+        async function initializeDemo() {
+            log('🚀 Starting VIB34D Demo System...');
+            
+            // Simulate module loading
+            const modules = [
+                'VIB3SystemController',
+                'VIB3HomeMaster', 
+                'VisualizerPool',
+                'GeometryRegistry',
+                'PresetDatabase',
+                'PerformanceMonitor',
+                'ErrorHandler'
+            ];
+            
+            for (const module of modules) {
+                log(`📦 Loading ${module}...`);
+                await new Promise(resolve => setTimeout(resolve, 200));
+                systemModules[module] = { status: 'loaded', instances: 0 };
+                log(`✅ ${module} loaded successfully`);
+            }
+            
+            // Update status displays
+            updateStatus('controller', 'Active (7 modules)');
+            updateStatus('homemaster', 'Running (0 visualizers)');
+            updateStatus('pool', 'Ready (0/20 instances)');
+            updateStatus('errors', 'Monitoring (0 errors)');
+            updateStatus('geometry', 'Ready (8 types)');
+            updateStatus('performance', '60 FPS, 12MB RAM');
+            
+            // Update canvas displays
+            updateCanvas('geometry-canvas', '<div style="color: #00ff88;">✅ 8 Geometry Types Registered<br>Current: Hypercube<br>Cache: 0 geometries</div>');
+            updateCanvas('pool-canvas', '<div style="color: #00ff88;">✅ Pool Ready<br>Active: 0 instances<br>Available: VIB34D_MOIRE, VIB34D_POLYTOPAL</div>');
+            updateCanvas('preset-canvas', '<div style="color: #00ff88;">✅ 7 Presets Loaded<br>Current: Default<br>Categories: system, artistic, technical</div>');
+            updateCanvas('performance-canvas', '<div style="color: #00ff88;">✅ Monitoring Active<br>FPS: 60.0<br>Memory: 12.3MB<br>Health: Excellent</div>');
+            
+            log('🎉 VIB34D Demo System ready!');
+            log('💡 Click buttons to interact with modules');
+        }
+        
+        // Demo functions
+        function cycleGeometry() {
+            const geometries = ['Hypercube', 'Tetrahedron', 'Sphere', 'Torus', 'Klein Bottle', 'Fractal', 'Wave', 'Crystal'];
+            const current = Math.floor(Math.random() * geometries.length);
+            log(`📐 Switched to ${geometries[current]} geometry`);
+            updateCanvas('geometry-canvas', `<div style="color: #00ff88;">✅ Active Geometry: ${geometries[current]}<br>Vertices: ${Math.floor(Math.random() * 1000 + 100)}<br>Cache: ${Math.floor(Math.random() * 5)} geometries</div>`);
+        }
+        
+        function toggleMorphing() {
+            const enabled = Math.random() > 0.5;
+            log(`🔄 Geometry morphing ${enabled ? 'enabled' : 'disabled'}`);
+        }
+        
+        function createInstance() {
+            const types = ['VIB34D_MOIRE', 'VIB34D_POLYTOPAL'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const id = `instance_${Date.now()}`;
+            log(`🆕 Created visualizer instance: ${id} (${type})`);
+            
+            const active = Math.floor(Math.random() * 7 + 1);
+            updateCanvas('pool-canvas', `<div style="color: #00ff88;">✅ Pool Active<br>Active: ${active} instances<br>Last Created: ${type}</div>`);
+            updateStatus('homemaster', `Running (${active} visualizers)`);
+        }
+        
+        function destroyInstance() {
+            log('🗑️ Destroyed oldest visualizer instance');
+            const active = Math.max(0, Math.floor(Math.random() * 6));
+            updateCanvas('pool-canvas', `<div style="color: #00ff88;">✅ Pool Active<br>Active: ${active} instances<br>Memory freed: 2.1MB</div>`);
+            updateStatus('homemaster', `Running (${active} visualizers)`);
+        }
+        
+        function loadPreset() {
+            const presets = ['Default', 'Hypercube Focus', 'Fractal Dreams', 'Wave Interference', 'Crystal Matrix', 'Chaos Mode', 'Minimal Clean'];
+            const preset = presets[Math.floor(Math.random() * presets.length)];
+            log(`🎨 Loaded preset: ${preset}`);
+            updateCanvas('preset-canvas', `<div style="color: #00ff88;">✅ Preset Applied<br>Current: ${preset}<br>Parameters: 9 updated</div>`);
+        }
+        
+        function savePreset() {
+            const name = `Custom_${Date.now().toString(36)}`;
+            log(`💾 Saved current state as preset: ${name}`);
+            updateCanvas('preset-canvas', `<div style="color: #00ff88;">✅ Preset Saved<br>Name: ${name}<br>Total Presets: ${Math.floor(Math.random() * 10 + 7)}</div>`);
+        }
+        
+        function startMonitoring() {
+            log('📊 Performance monitoring started');
+            updateCanvas('performance-canvas', '<div style="color: #00ff88;">✅ Monitoring Active<br>FPS: 60.0<br>Memory: 12.3MB<br>Optimization: Normal</div>');
+            
+            // Simulate performance updates
+            setInterval(() => {
+                const fps = (58 + Math.random() * 4).toFixed(1);
+                const memory = (10 + Math.random() * 10).toFixed(1);
+                updateStatus('performance', `${fps} FPS, ${memory}MB RAM`);
+            }, 1000);
+        }
+        
+        function stopMonitoring() {
+            log('⏸️ Performance monitoring stopped');
+            updateCanvas('performance-canvas', '<div style="color: #666;">⏸️ Monitoring Stopped<br>Last FPS: 60.0<br>Peak Memory: 15.7MB</div>');
+        }
+        
+        // Initialize demo when page loads
+        document.addEventListener('DOMContentLoaded', initializeDemo);
+    </script>
+</body>
+</html>
