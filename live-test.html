@@ -256,15 +256,27 @@
         </div>
     </div>
     
-    <!-- Load all modules -->
-    <script src="src/core/VIB3SystemController.js"></script>
-    <script src="src/core/VIB3HomeMaster.js"></script>
-    <script src="src/managers/VisualizerPool.js"></script>
-    <script src="src/geometry/GeometryRegistry.js"></script>
-    <script src="src/presets/PresetDatabase.js"></script>
-    <script src="src/utils/PerformanceMonitor.js"></script>
-    <script src="src/utils/ErrorHandler.js"></script>
-    <script src="src/interactions/InteractionCoordinator.js"></script>
+    <!-- Load all modules as ES6 modules -->
+    <script type="module">
+        // Import all modules
+        import { VIB3SystemController } from './src/core/VIB3SystemController.js';
+        import { VIB3HomeMaster } from './src/core/VIB3HomeMaster.js';
+        import { VisualizerPool } from './src/managers/VisualizerPool.js';
+        import { GeometryRegistry } from './src/geometry/GeometryRegistry.js';
+        import { PresetDatabase } from './src/presets/PresetDatabase.js';
+        import { PerformanceMonitor } from './src/utils/PerformanceMonitor.js';
+        import { ErrorHandler } from './src/utils/ErrorHandler.js';
+        import { InteractionCoordinator } from './src/interactions/InteractionCoordinator.js';
+        
+        // Make modules globally available for demo functions
+        window.VIB3SystemController = VIB3SystemController;
+        window.VIB3HomeMaster = VIB3HomeMaster;
+        window.VisualizerPool = VisualizerPool;
+        window.GeometryRegistry = GeometryRegistry;
+        window.PresetDatabase = PresetDatabase;
+        window.PerformanceMonitor = PerformanceMonitor;
+        window.ErrorHandler = ErrorHandler;
+        window.InteractionCoordinator = InteractionCoordinator;
     
     <script>
         // System instances
@@ -687,6 +699,26 @@
                 log('error-output', `❌ Error stats failed: ${error.message}`, 'error');
             }
         }
+        
+        // Make demo functions globally available for onclick handlers
+        window.testHomeMaster = testHomeMaster;
+        window.testInteraction = testInteraction;
+        window.getHomeMasterStatus = getHomeMasterStatus;
+        window.createVisualizerInstance = createVisualizerInstance;
+        window.destroyVisualizerInstance = destroyVisualizerInstance;
+        window.getPoolStatus = getPoolStatus;
+        window.generateGeometry = generateGeometry;
+        window.listGeometries = listGeometries;
+        window.testMorphing = testMorphing;
+        window.loadPreset = loadPreset;
+        window.listPresets = listPresets;
+        window.getPresetStats = getPresetStats;
+        window.startPerformanceMonitoring = startPerformanceMonitoring;
+        window.getPerformanceMetrics = getPerformanceMetrics;
+        window.stopPerformanceMonitoring = stopPerformanceMonitoring;
+        window.triggerTestError = triggerTestError;
+        window.getSystemHealth = getSystemHealth;
+        window.getErrorStats = getErrorStats;
         
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', initializeSystem);
