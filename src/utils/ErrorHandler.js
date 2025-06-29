@@ -277,8 +277,10 @@ class ErrorHandler extends EventTarget {
             this.notifyUser(errorRecord);
         }
         
-        // Emit error event
-        this.emit('error', errorRecord);
+        // Emit error event if available
+        if (typeof this.emit === 'function') {
+            this.emit('error', errorRecord);
+        }
         
         console.error(`🚨 Error [${category}/${severity}]: ${errorRecord.message}`);
     }
@@ -393,7 +395,9 @@ class ErrorHandler extends EventTarget {
                 
                 console.log(`✅ Recovery successful: ${result.message} (${recoveryTime.toFixed(2)}ms)`);
                 
-                this.emit('errorRecovered', errorRecord);
+                if (typeof this.emit === 'function') {
+                    this.emit('errorRecovered', errorRecord);
+                }
                 this.updatePerformanceMetrics('recovery', true, recoveryTime);
                 
                 return true;

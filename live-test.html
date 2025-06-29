@@ -322,8 +322,13 @@
                 updateStatus('geometry', 'Ready (8 types)');
                 
                 // Initialize PresetDatabase
-                systemInstances.presetDatabase = new PresetDatabase({ debugMode: true });
-                log('preset-output', '✅ PresetDatabase initialized with 7 default presets', 'success');
+                try {
+                    systemInstances.presetDatabase = new PresetDatabase({ debugMode: true });
+                    log('preset-output', '✅ PresetDatabase initialized with 7 default presets', 'success');
+                } catch (error) {
+                    log('preset-output', `⚠️ PresetDatabase initialization failed: ${error.message}`, 'warning');
+                    systemInstances.presetDatabase = { getAllPresets: () => [], getStatus: () => ({}) };
+                }
                 
                 // Initialize PerformanceMonitor
                 systemInstances.performanceMonitor = new PerformanceMonitor({ debugMode: true });

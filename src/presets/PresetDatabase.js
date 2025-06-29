@@ -366,7 +366,10 @@ class PresetDatabase extends EventTarget {
         
         console.log(`🎨 Preset added: ${preset.name} (${preset.id})`);
         
-        this.emit('presetAdded', { preset });
+        // Emit event if available
+        if (typeof this.emit === 'function') {
+            this.emit('presetAdded', { preset });
+        }
         
         return preset.id;
     }
@@ -387,7 +390,10 @@ class PresetDatabase extends EventTarget {
         
         console.log(`🗑️ Preset removed: ${preset.name}`);
         
-        this.emit('presetRemoved', { presetId, preset });
+        // Emit event if available
+        if (typeof this.emit === 'function') {
+            this.emit('presetRemoved', { presetId, preset });
+        }
         
         return true;
     }
